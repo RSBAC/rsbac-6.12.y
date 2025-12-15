@@ -862,14 +862,14 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
 	rsbac_target_id.ipc.id.id_nr = file->f_path.dentry->d_inode->i_ino;
 	rsbac_new_target_id.ipc.type = I_shm;
 	rsbac_new_target_id.ipc.id.id_nr = file->f_path.dentry->d_inode->i_ino;
-	if (rsbac_adf_set_attr(R_CREATE,
+	if (unlikely(rsbac_adf_set_attr(R_CREATE,
 				task_pid(current),
 				T_IPC,
 				rsbac_target_id,
 				T_IPC,
 				rsbac_new_target_id,
 				A_none,
-				rsbac_attribute_value)) {
+				rsbac_attribute_value))) {
 		rsbac_printk(KERN_WARNING
 				"newseg() [sys_shmget()]: rsbac_adf_set_attr() returned error");
 	}
@@ -1387,14 +1387,14 @@ static long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf, int ver
 			rsbac_target_id.ipc.id.id_nr = shmid;
 			rsbac_attribute_value.dummy = 0;
 			rsbac_new_target_id.dummy = 0;
-			if (rsbac_adf_set_attr(R_DELETE,
+			if (unlikely(rsbac_adf_set_attr(R_DELETE,
 						task_pid(current),
 						T_IPC,
 						rsbac_target_id,
 						T_NONE,
 						rsbac_new_target_id,
 						A_none,
-						rsbac_attribute_value)) {
+						rsbac_attribute_value))) {
 				rsbac_printk(KERN_WARNING
 						"sys_shmctl(): rsbac_adf_set_attr() returned error");
 			}
@@ -1707,7 +1707,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg,
 		char * program_name = rsbac_get_program_name();
 
 		rsbac_printk(KERN_INFO "do_shmat(): RSBAC mprotect: denied WRITE and EXEC, pid %u(%s)\n",
-				current->pid, program_name);
+				current->pid, program_name ? program_name : "(unknown)");
 		if (program_name)
 			rsbac_kfree(program_name);
 		err = -EPERM;
@@ -1759,8 +1759,8 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg,
 				rsbac_target_id,
 				A_none,
 				rsbac_attribute_value)) {
-		err = -EPERM;
 		ipc_unlock_object(&shp->shm_perm);
+		err = -EPERM;
 		goto out_unlock;
 	}
 #endif
@@ -1850,14 +1850,14 @@ out_nattch:
 #ifdef CONFIG_RSBAC
 	if(!err) {
 		rsbac_new_target_id.dummy = 0;
-		if (rsbac_adf_set_attr(rsbac_request,
+		if (unlikely(rsbac_adf_set_attr(rsbac_request,
 					task_pid(current),
 					T_IPC,
 					rsbac_target_id,
 					T_NONE,
 					rsbac_new_target_id,
 					A_none,
-					rsbac_attribute_value)) {
+					rsbac_attribute_value))) {
 			rsbac_printk(KERN_WARNING
 					"sys_shmat(): rsbac_adf_set_attr() returned error");
 		}
