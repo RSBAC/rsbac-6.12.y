@@ -167,7 +167,7 @@ SYSCALL_DEFINE5(kcmp, pid_t, pid1, pid_t, pid2, int, type,
 	rsbac_target_id.process = task_pid(task1);
 	rsbac_attribute_value.dummy = 0;
 	if (!rsbac_adf_request(R_TRACE,
-			rsbac_target_id.process,
+			task_pid(current),
 			T_PROCESS,
 			rsbac_target_id,
 			A_none,
@@ -179,7 +179,7 @@ SYSCALL_DEFINE5(kcmp, pid_t, pid1, pid_t, pid2, int, type,
 	rsbac_target_id.process = task_pid(task2);
 	rsbac_attribute_value.dummy = 0;
 	if (!rsbac_adf_request(R_TRACE,
-			rsbac_target_id.process,
+			task_pid(current),
 			T_PROCESS,
 			rsbac_target_id,
 			A_none,
