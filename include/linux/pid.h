@@ -59,6 +59,9 @@ struct pid
 	spinlock_t lock;
 	struct dentry *stashed;
 	u64 ino;
+#ifdef CONFIG_RSBAC
+	bool rsbac_mount_process;
+#endif
 	/* lists of tasks that use this pid */
 	struct hlist_head tasks[PIDTYPE_MAX];
 	struct hlist_head inodes;
